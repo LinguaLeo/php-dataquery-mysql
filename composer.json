@@ -1,0 +1,29 @@
+{
+    "name": "lingualeo/php-dataquery-mysql",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "LinguaLeo",
+            "email": "backend@lingualeo.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "http://packages.lingualeo-funk.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=5.4.0",
+        "lingualeo/php-dataquery": "1.0.*"
+    },
+    "suggest": {
+        "lingualeo/php-dataquery-myarray": "Allows working with php arrays through query interface"
+    },
+    "autoload": {
+        "psr-0": {
+            "LinguaLeo\\": "src/"
+        }
+    }
+}
