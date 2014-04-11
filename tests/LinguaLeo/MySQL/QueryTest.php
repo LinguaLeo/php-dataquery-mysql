@@ -325,10 +325,10 @@ class QueryTest extends \PHPUnit_Framework_TestCase
         $this->query->delete($this->criteria);
     }
 
-    public function testAggregate()
+    public function testAggregateGroupBy()
     {
         $this->assertSQL(
-            'SELECT COUNT(*),SUM(bar),baz FROM test.trololo WHERE foo=?',
+            'SELECT COUNT(*),SUM(bar),baz FROM test.trololo WHERE foo=? GROUP BY baz',
             [1]
         );
 
@@ -337,4 +337,18 @@ class QueryTest extends \PHPUnit_Framework_TestCase
 
         $this->query->select($this->criteria);
     }
+
+    public function testAggregate()
+    {
+        $this->assertSQL(
+            'SELECT COUNT(*) FROM test.trololo WHERE foo=?',
+            [1]
+        );
+
+        $this->criteria->read(['*' => 'count']);
+        $this->criteria->where('foo', 1);
+
+        $this->query->select($this->criteria);
+    }
+
 }

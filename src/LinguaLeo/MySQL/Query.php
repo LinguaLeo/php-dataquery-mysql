@@ -190,6 +190,10 @@ class Query implements QueryInterface
             . ' FROM ' . $this->getFrom($criteria)
             . ' WHERE ' . $this->getWhere($criteria);
 
+        if ($this->hasMixedKeys($criteria->fields)) {
+            $SQL .= ' GROUP BY ' . $this->getGroupByFields($criteria->fields);
+        }
+
         if ($criteria->orderBy) {
             $SQL .= ' ORDER BY '. $this->getOrder($criteria->orderBy);
         }
@@ -329,5 +333,44 @@ class Query implements QueryInterface
             $stmt = $conn->query($query);
         }
         return new Result($stmt);
+    }
+
+    private function hasMixedKeys($array)
+    {
+        if (!$array) {
+            return false;
+        }
+
+        $hasNumeric = false;
+        $hasString = false;
+        foreach($array as $key => $value) {
+            if (is_numeric($key)) {
+                $hasNumeric = true;
+            } else {
+                $hasString = true;
+            }
+
+            if ($hasNumeric && $hasString) {
+                break;
+            }
+        }
+
+        return $hasNumeric && $hasString;
+    }
+
+    private function getGroupByFields($array)
+    {
+        $columns = [];
+        foreach($array as $key => $value) {
+            if (is_numeric($key)) {
+                $columns[] = $value;
+            }
+        }
+
+        if (empty($columns)) {
+            throw new \LogicException('Group by fields not found');
+        }
+
+        return implode(',', $columns);
     }
 }
