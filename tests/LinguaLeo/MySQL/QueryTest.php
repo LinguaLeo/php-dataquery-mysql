@@ -328,12 +328,33 @@ class QueryTest extends \PHPUnit_Framework_TestCase
     public function testAggregate()
     {
         $this->assertSQL(
-            'SELECT COUNT(*),SUM(bar),baz FROM test.trololo WHERE foo=?',
+            'SELECT baz,COUNT(*),SUM(bar) FROM test.trololo WHERE foo=? GROUP BY baz',
             [1]
         );
 
-        $this->criteria->read(['*' => 'count', 'bar' => 'sum', 'baz']);
+        $this->criteria->aggregate('count');
+        $this->criteria->aggregate('sum', 'bar');
+        $this->criteria->read(['baz']);
         $this->criteria->where('foo', 1);
+
+        $this->query->select($this->criteria);
+    }
+
+    public function testAggregateCount()
+    {
+        $this->assertSQL('SELECT COUNT(*) FROM test.trololo WHERE 1');
+
+        $this->criteria->aggregate('count');
+
+        $this->query->select($this->criteria);
+    }
+
+    public function testAggregateByTwoFields()
+    {
+        $this->assertSQL('SELECT foo,bar,COUNT(*) FROM test.trololo WHERE 1 GROUP BY foo,bar');
+
+        $this->criteria->aggregate('count');
+        $this->criteria->read(['foo', 'bar']);
 
         $this->query->select($this->criteria);
     }

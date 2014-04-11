@@ -15,8 +15,8 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "php": ">=5.4.0",
-        "lingualeo/php-dataquery": "1.0.*"
+        "php": ">=5.5.0",
+        "lingualeo/php-dataquery": "1.1.*"
     },
     "suggest": {
         "lingualeo/php-dataquery-myarray": "Allows working with php arrays through query interface"

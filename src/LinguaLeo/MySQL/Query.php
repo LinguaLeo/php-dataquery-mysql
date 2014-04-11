@@ -97,9 +97,7 @@ class Query implements QueryInterface
 
         $placeholders = [];
 
-        foreach ($criteria->conditions as $condition) {
-            list($column, $value, $comparison) = $condition;
-
+        foreach ($criteria->conditions as list($column, $value, $comparison)) {
             switch ($comparison) {
                 case Criteria::IS_NOT_NULL:
                 case Criteria::IS_NULL:
@@ -128,15 +126,21 @@ class Query implements QueryInterface
         return implode(' AND ', $placeholders);
     }
 
-    private function getExpression($fields)
+    private function getExpression(Criteria $criteria)
     {
+        if ($criteria->fields) {
+            $fields = $criteria->fields;
+        }
+        if ($criteria->aggregations) {
+            foreach ($criteria->aggregations as list($func, $field)) {
+                if (!$field) {
+                    $field = '*';
+                }
+                $fields[] = strtoupper($func).'('.$field.')';
+            }
+        }
         if (empty($fields)) {
             return '*';
-        }
-        foreach ($fields as $field => &$aggregate) {
-            if (is_string($field)) {
-                $aggregate = strtoupper($aggregate).'('.$field.')';
-            }
         }
         return implode(',', $fields);
     }
@@ -186,9 +190,13 @@ class Query implements QueryInterface
      */
     public function select(Criteria $criteria)
     {
-        $SQL = 'SELECT ' . $this->getExpression($criteria->fields)
+        $SQL = 'SELECT ' . $this->getExpression($criteria)
             . ' FROM ' . $this->getFrom($criteria)
             . ' WHERE ' . $this->getWhere($criteria);
+
+        if ($criteria->aggregations && $criteria->fields) {
+            $SQL .= ' GROUP BY '.implode(',', $criteria->fields);
+        }
 
         if ($criteria->orderBy) {
             $SQL .= ' ORDER BY '. $this->getOrder($criteria->orderBy);
