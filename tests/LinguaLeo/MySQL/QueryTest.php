@@ -328,7 +328,7 @@ class QueryTest extends \PHPUnit_Framework_TestCase
     public function testAggregate()
     {
         $this->assertSQL(
-            'SELECT COUNT(*),SUM(bar),baz FROM test.trololo WHERE foo=?',
+            'SELECT COUNT(*),SUM(bar),baz FROM test.trololo WHERE foo=? GROUP BY baz',
             [1]
         );
 
