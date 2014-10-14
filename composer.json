@@ -15,8 +15,11 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "php": ">=5.5.0",
-        "lingualeo/php-dataquery": "1.1.*"
+        "php": "~5.5.0",
+        "lingualeo/php-dataquery": "~1.1.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*"
     },
     "suggest": {
         "lingualeo/php-dataquery-myarray": "Allows working with php arrays through query interface"

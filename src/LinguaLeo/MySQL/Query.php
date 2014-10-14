@@ -132,11 +132,11 @@ class Query implements QueryInterface
             $fields = $criteria->fields;
         }
         if ($criteria->aggregations) {
-            foreach ($criteria->aggregations as list($func, $field)) {
+            foreach ($criteria->aggregations as list($func, $field, $alias)) {
                 if (!$field) {
                     $field = '*';
                 }
-                $fields[] = strtoupper($func).'('.$field.')';
+                $fields[] = strtoupper($func).'('.$field.')' . ($alias ? ' as ' . $alias : '');
             }
         }
         if (empty($fields)) {
