@@ -136,7 +136,7 @@ class Query implements QueryInterface
                 if (!$field) {
                     $field = '*';
                 }
-                $fields[] = strtoupper($func).'('.$field.')' . ($alias ? ' as ' . $alias : '');
+                $fields[] = strtoupper($func).'('.$field.')' . ($alias ? ' AS ' . $alias : '');
             }
         }
         if (empty($fields)) {
