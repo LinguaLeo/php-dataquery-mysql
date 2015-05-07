@@ -35,7 +35,7 @@ class QueryTest extends \PHPUnit_Framework_TestCase
      */
     protected $query;
 
-    /*
+    /**
      * @var Criteria
      */
     protected $criteria;
@@ -328,12 +328,13 @@ class QueryTest extends \PHPUnit_Framework_TestCase
     public function testAggregate()
     {
         $this->assertSQL(
-            'SELECT baz,COUNT(*),SUM(bar) FROM test.trololo WHERE foo=? GROUP BY baz',
+            'SELECT baz,COUNT(*),SUM(bar),AVG(bar) AS avg_bar FROM test.trololo WHERE foo=? GROUP BY baz',
             [1]
         );
 
         $this->criteria->aggregate('count');
         $this->criteria->aggregate('sum', 'bar');
+        $this->criteria->aggregate('avg', 'bar', 'avg_bar');
         $this->criteria->read(['baz']);
         $this->criteria->where('foo', 1);
 
