@@ -209,12 +209,18 @@ class QueryTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdateValue()
     {
-        $this->assertSQL(
-            'UPDATE test.trololo SET a=?,b=? WHERE 1',
-            [1, null]
-        );
+        $this->assertSQL('UPDATE test.trololo SET a=? WHERE 1', [1]);
 
-        $this->criteria->write(['a' => 1, 'b' => null]);
+        $this->criteria->write(['a' => 1]);
+
+        $this->query->update($this->criteria);
+    }
+
+    public function testUpdateNullValue()
+    {
+        $this->assertSQL('UPDATE test.trololo SET a=? WHERE 1', [null]);
+
+        $this->criteria->write(['a' => null]);
 
         $this->query->update($this->criteria);
     }
