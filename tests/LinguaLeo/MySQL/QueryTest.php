@@ -209,12 +209,18 @@ class QueryTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdateValue()
     {
-        $this->assertSQL(
-            'UPDATE test.trololo SET a=? WHERE 1',
-            [1]
-        );
+        $this->assertSQL('UPDATE test.trololo SET a=? WHERE 1', [1]);
 
         $this->criteria->write(['a' => 1]);
+
+        $this->query->update($this->criteria);
+    }
+
+    public function testUpdateNullValue()
+    {
+        $this->assertSQL('UPDATE test.trololo SET a=? WHERE 1', [null]);
+
+        $this->criteria->write(['a' => null]);
 
         $this->query->update($this->criteria);
     }
@@ -259,18 +265,45 @@ class QueryTest extends \PHPUnit_Framework_TestCase
         $this->query->update($this->criteria);
     }
 
-    public function testInsertRow()
+    public function testInsertRowWithOneColumn()
+    {
+        $this->assertSQL('INSERT INTO test.trololo(foo) VALUES (?)', [1]);
+        $this->criteria->write(['foo' => 1]);
+        $this->query->insert($this->criteria);
+    }
+
+    public function testInsertRowWithTwoColumns()
     {
         $this->assertSQL('INSERT INTO test.trololo(foo,bar) VALUES (?,?)', [1, -2]);
-        $this->criteria->write(['foo' => 1, 'bar' => -2]);
+        $this->criteria->write(
+            [
+                'foo' => 1,
+                'bar' => -2
+            ]
+        );
+        $this->query->insert($this->criteria);
+    }
+
+    public function testInsertRowWithNullValue()
+    {
+        $this->assertSQL('INSERT INTO test.trololo(foo) VALUES (?)', [null]);
+        $this->criteria->write(['foo' => null]);
         $this->query->insert($this->criteria);
     }
 
     public function testMultiInsertRow()
     {
-        $this->assertSQL('INSERT INTO test.trololo(foo,bar) VALUES (?,?),(?,?)', [1, -2, 2, 3]);
+        $this->assertSQL(
+            'INSERT INTO test.trololo(foo,bar) VALUES (?,?),(?,?),(?,?)',
+            [1, -2, 2, 3, 4, null]
+        );
 
-        $this->criteria->write(['foo' => [1, 2], 'bar' => [-2, 3]]);
+        $this->criteria->write(
+            [
+                'foo' => [1, 2, 4],
+                'bar' => [-2, 3, null],
+            ]
+        );
 
         $this->query->insert($this->criteria);
     }
@@ -288,7 +321,8 @@ class QueryTest extends \PHPUnit_Framework_TestCase
     public function testInsertRowOnDuplicateTwoColumns()
     {
         $this->assertSQL(
-            'INSERT INTO test.trololo(foo,bar,baz) VALUES (?,?,?) ON DUPLICATE KEY UPDATE foo=VALUES(foo),baz=VALUES(baz)',
+            'INSERT INTO test.trololo(foo,bar,baz) VALUES (?,?,?) ' .
+            'ON DUPLICATE KEY UPDATE foo=VALUES(foo),baz=VALUES(baz)',
             [1, -2, 3]
         );
 
@@ -301,7 +335,7 @@ class QueryTest extends \PHPUnit_Framework_TestCase
     /**
      * @expectedException \LinguaLeo\DataQuery\Exception\QueryException
      */
-    public function testInsertWithNoWrtieDefinition()
+    public function testInsertWithNoWriteDefinition()
     {
         $this->query->insert($this->criteria);
     }

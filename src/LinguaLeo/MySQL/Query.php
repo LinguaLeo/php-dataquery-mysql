@@ -158,7 +158,10 @@ class Query implements QueryInterface
         $columnsCount = count($criteria->fields);
         $rowsCount = null;
         foreach ($criteria->values as $columnIndex => $column) {
-            foreach ((array)$column as $rowIndex => $value) {
+            if (!is_array($column)) {
+                $column = [$column];
+            }
+            foreach ($column as $rowIndex => $value) {
                 $this->arguments[$columnIndex + $rowIndex * $columnsCount] = $value;
             }
             if (null === $rowsCount) {

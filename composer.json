@@ -15,8 +15,8 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "php": "~5.5.0",
-        "lingualeo/php-dataquery": "~1.1.3"
+        "php": "~5.5",
+        "lingualeo/php-dataquery": "~1.1"
     },
     "require-dev": {
         "phpunit/phpunit": "3.7.*"
