@@ -265,18 +265,29 @@ class QueryTest extends \PHPUnit_Framework_TestCase
         $this->query->update($this->criteria);
     }
 
-    public function testInsertRow()
+    public function testInsertRowWithOneColumn()
     {
-        $this->assertSQL(
-            'INSERT INTO test.trololo(foo,bar,zoo) VALUES (?,?,?)',
-            [1, -2, null]
-        );
+        $this->assertSQL('INSERT INTO test.trololo(foo) VALUES (?)', [1]);
+        $this->criteria->write(['foo' => 1]);
+        $this->query->insert($this->criteria);
+    }
+
+    public function testInsertRowWithTwoColumns()
+    {
+        $this->assertSQL('INSERT INTO test.trololo(foo,bar) VALUES (?,?)', [1, -2]);
         $this->criteria->write(
             [
                 'foo' => 1,
-                'bar' => -2,
-                'zoo' => null]
+                'bar' => -2
+            ]
         );
+        $this->query->insert($this->criteria);
+    }
+
+    public function testInsertRowWithNullValue()
+    {
+        $this->assertSQL('INSERT INTO test.trololo(foo) VALUES (?)', [null]);
+        $this->criteria->write(['foo' => null]);
         $this->query->insert($this->criteria);
     }
 
@@ -310,12 +321,12 @@ class QueryTest extends \PHPUnit_Framework_TestCase
     public function testInsertRowOnDuplicateTwoColumns()
     {
         $this->assertSQL(
-            'INSERT INTO test.trololo(foo,bar,baz,zoo) VALUES (?,?,?,?) ' .
+            'INSERT INTO test.trololo(foo,bar,baz) VALUES (?,?,?) ' .
             'ON DUPLICATE KEY UPDATE foo=VALUES(foo),baz=VALUES(baz)',
-            [1, -2, 3, null]
+            [1, -2, 3]
         );
 
-        $this->criteria->write(['foo' => 1, 'bar' => -2, 'baz' => 3, 'zoo' => null]);
+        $this->criteria->write(['foo' => 1, 'bar' => -2, 'baz' => 3]);
         $this->criteria->upsert(['foo', 'baz']);
 
         $this->query->insert($this->criteria);
