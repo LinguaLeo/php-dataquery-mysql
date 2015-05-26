@@ -218,7 +218,7 @@ class Query implements QueryInterface
             $updates = [];
             $values = array_combine($criteria->fields, $criteria->values);
             foreach ((array)$criteria->upsert as $key => $value) {
-                if(is_numeric($key)) {
+                if(is_int($key)) {
                     $updates[] = $value . '=VALUES(' . $value . ')';
                 } else {
                     switch($value) {
