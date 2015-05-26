@@ -174,34 +174,6 @@ class Query implements QueryInterface
     }
 
     /**
-     * Get SQL fragment for DUPLICATE KEY UPDATE statement
-     *
-     * @param array|string $columns
-     * @return string
-     */
-    private function getDuplicateUpdatedValues($columns)
-    {
-        $updates = [];
-        foreach ((array)$columns as $column) {
-            $updates[] = $column . '=VALUES(' . $column . ')';
-        }
-        return implode(',', $updates);
-    }
-
-    /**
-     * @param array|string $columns
-     * @return string
-     */
-    private function getDuplicateIncrementValues($columns)
-    {
-        $updates = [];
-        foreach ((array)$columns as $column) {
-            $updates[] = $column . '=' . $column . '+(?)';
-        }
-        return implode(',', $updates);
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function select(Criteria $criteria)
