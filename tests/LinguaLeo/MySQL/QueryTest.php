@@ -336,26 +336,24 @@ class QueryTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertSQL(
             'INSERT INTO test.trololo(foo,bar,baz) VALUES (?,?,?) ' .
-            'ON DUPLICATE KEY UPDATE foo=foo+(?),bar=bar+(?)',
-            [1, -2, 3, 1, -2]
+            'ON DUPLICATE KEY UPDATE foo=VALUES(foo),bar=bar+(?)',
+            [1, -2, 3, -2]
         );
 
         $this->criteria->write(['foo' => 1, 'bar' => -2, 'baz' => 3]);
-        $this->criteria->upsert(['foo', 'bar']);
-        $this->criteria->upsertMode = Criteria::UPSERT_INCREMENT;
+        $this->criteria->upsert(['foo', 'bar' => 'inc']);
 
         $this->query->insert($this->criteria);
     }
 
     /**
      * @expectedException \LinguaLeo\DataQuery\Exception\QueryException
-     * @expectedExceptionMessage Unsupported upsert mode: foo
+     * @expectedExceptionMessage Unsupported mode: foo
      */
     public function testUnsupportedUpsertMode()
     {
         $this->criteria->write(['foo' => 1, 'bar' => -2]);
-        $this->criteria->upsert(['bar']);
-        $this->criteria->upsertMode = 'foo';
+        $this->criteria->upsert(['bar' => 'foo']);
 
         $this->query->insert($this->criteria);
     }
