@@ -241,16 +241,21 @@ class Query implements QueryInterface
             '(' . implode(',', $criteria->fields) . ') VALUES ' . $this->getValuesPlaceholders($criteria);
 
         if ($criteria->upsert) {
-
             $SQL .= ' ON DUPLICATE KEY UPDATE ';
-            if($criteria->upsertIncrement) {
-                $SQL .= $this->getDuplicateIncrementValues($criteria->upsert);
-                $values = array_combine($criteria->fields, $criteria->values);
-                foreach($criteria->upsert as $column) {
-                    $this->arguments[] = $values[$column];
-                }
-            } else {
-                $SQL .= $this->getDuplicateUpdatedValues($criteria->upsert);
+
+            switch ($criteria->upsertMode) {
+                case Criteria::UPSERT_UPDATE:
+                    $SQL .= $this->getDuplicateUpdatedValues($criteria->upsert);
+                    break;
+                case Criteria::UPSERT_INCREMENT:
+                    $SQL .= $this->getDuplicateIncrementValues($criteria->upsert);
+                    $values = array_combine($criteria->fields, $criteria->values);
+                    foreach ($criteria->upsert as $column) {
+                        $this->arguments[] = $values[$column];
+                    }
+                    break;
+                default:
+                    throw  new QueryException('Unsupported upsert mode: ' . $criteria->upsertMode);
             }
         }
 

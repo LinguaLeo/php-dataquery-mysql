@@ -342,7 +342,20 @@ class QueryTest extends \PHPUnit_Framework_TestCase
 
         $this->criteria->write(['foo' => 1, 'bar' => -2, 'baz' => 3]);
         $this->criteria->upsert(['foo', 'bar']);
-        $this->criteria->upsertIncrement = true;
+        $this->criteria->upsertMode = Criteria::UPSERT_INCREMENT;
+
+        $this->query->insert($this->criteria);
+    }
+
+    /**
+     * @expectedException \LinguaLeo\DataQuery\Exception\QueryException
+     * @expectedExceptionMessage Unsupported upsert mode: foo
+     */
+    public function testUnsupportedUpsertMode()
+    {
+        $this->criteria->write(['foo' => 1, 'bar' => -2]);
+        $this->criteria->upsert(['bar']);
+        $this->criteria->upsertMode = 'foo';
 
         $this->query->insert($this->criteria);
     }
