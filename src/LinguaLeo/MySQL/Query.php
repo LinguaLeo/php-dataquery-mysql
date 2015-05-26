@@ -189,6 +189,19 @@ class Query implements QueryInterface
     }
 
     /**
+     * @param array|string $columns
+     * @return string
+     */
+    private function getDuplicateIncrementValues($columns)
+    {
+        $updates = [];
+        foreach ((array)$columns as $column) {
+            $updates[] = $column . '=' . $column . '+(?)';
+        }
+        return implode(',', $updates);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function select(Criteria $criteria)
@@ -228,7 +241,17 @@ class Query implements QueryInterface
             '(' . implode(',', $criteria->fields) . ') VALUES ' . $this->getValuesPlaceholders($criteria);
 
         if ($criteria->upsert) {
-            $SQL .= ' ON DUPLICATE KEY UPDATE ' . $this->getDuplicateUpdatedValues($criteria->upsert);
+
+            $SQL .= ' ON DUPLICATE KEY UPDATE ';
+            if($criteria->upsertIncrement) {
+                $SQL .= $this->getDuplicateIncrementValues($criteria->upsert);
+                $values = array_combine($criteria->fields, $criteria->values);
+                foreach($criteria->upsert as $column) {
+                    $this->arguments[] = $values[$column];
+                }
+            } else {
+                $SQL .= $this->getDuplicateUpdatedValues($criteria->upsert);
+            }
         }
 
         return $this->executeQuery($SQL, $this->arguments);

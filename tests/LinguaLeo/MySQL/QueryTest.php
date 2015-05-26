@@ -332,6 +332,21 @@ class QueryTest extends \PHPUnit_Framework_TestCase
         $this->query->insert($this->criteria);
     }
 
+    public function testIncrementRowOnDuplicate()
+    {
+        $this->assertSQL(
+            'INSERT INTO test.trololo(foo,bar,baz) VALUES (?,?,?) ' .
+            'ON DUPLICATE KEY UPDATE foo=foo+(?),bar=bar+(?)',
+            [1, -2, 3, 1, -2]
+        );
+
+        $this->criteria->write(['foo' => 1, 'bar' => -2, 'baz' => 3]);
+        $this->criteria->upsert(['foo', 'bar']);
+        $this->criteria->upsertIncrement = true;
+
+        $this->query->insert($this->criteria);
+    }
+
     /**
      * @expectedException \LinguaLeo\DataQuery\Exception\QueryException
      */
