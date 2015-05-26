@@ -174,21 +174,6 @@ class Query implements QueryInterface
     }
 
     /**
-     * Get SQL fragment for DUPLICATE KEY UPDATE statement
-     *
-     * @param array|string $columns
-     * @return string
-     */
-    private function getDuplicateUpdatedValues($columns)
-    {
-        $updates = [];
-        foreach ((array)$columns as $column) {
-            $updates[] = $column . '=VALUES(' . $column . ')';
-        }
-        return implode(',', $updates);
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function select(Criteria $criteria)
@@ -216,6 +201,39 @@ class Query implements QueryInterface
     }
 
     /**
+     * @param array $columns
+     * @param array $values
+     *
+     * @return string
+     * @throws QueryException
+     */
+    private function getDuplicateUpdatedValues(array $columns, array $values)
+    {
+        $updates = [];
+        foreach ($columns as $column => $function) {
+            if (is_int($column)) {
+                $column = $function;
+                $function = 'value';
+            }
+            switch ($function) {
+                case 'value';
+                    $updates[] = $column . '=VALUES(' . $column . ')';
+                    break;
+                case 'inc':
+                    $updates[] = $column . '=' . $column . '+(?)';
+                    if (!isset($values[$column])) {
+                        throw new QueryException(sprintf('Value for "%s" isn`t specified', $column));
+                    }
+                    $this->arguments[] = $values[$column];
+                    break;
+                default:
+                    throw new QueryException('Unsupported function: ' . $function);
+            }
+        }
+        return implode(',', $updates);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function insert(Criteria $criteria)
@@ -228,7 +246,8 @@ class Query implements QueryInterface
             '(' . implode(',', $criteria->fields) . ') VALUES ' . $this->getValuesPlaceholders($criteria);
 
         if ($criteria->upsert) {
-            $SQL .= ' ON DUPLICATE KEY UPDATE ' . $this->getDuplicateUpdatedValues($criteria->upsert);
+            $SQL .= ' ON DUPLICATE KEY UPDATE '
+            . $this->getDuplicateUpdatedValues($criteria->upsert, array_combine($criteria->fields, $criteria->values));
         }
 
         return $this->executeQuery($SQL, $this->arguments);

@@ -27,6 +27,7 @@
 namespace LinguaLeo\MySQL;
 
 use LinguaLeo\DataQuery\Criteria;
+use LinguaLeo\DataQuery\Exception\QueryException;
 
 class QueryTest extends \PHPUnit_Framework_TestCase
 {
@@ -328,6 +329,44 @@ class QueryTest extends \PHPUnit_Framework_TestCase
 
         $this->criteria->write(['foo' => 1, 'bar' => -2, 'baz' => 3]);
         $this->criteria->upsert(['foo', 'baz']);
+
+        $this->query->insert($this->criteria);
+    }
+
+    public function testIncrementRowOnDuplicate()
+    {
+        $this->assertSQL(
+            'INSERT INTO test.trololo(foo,bar,baz) VALUES (?,?,?) ' .
+            'ON DUPLICATE KEY UPDATE foo=VALUES(foo),bar=bar+(?)',
+            [1, -2, 3, -2]
+        );
+
+        $this->criteria->write(['foo' => 1, 'bar' => -2, 'baz' => 3]);
+        $this->criteria->upsert(['foo', 'bar' => 'inc']);
+
+        $this->query->insert($this->criteria);
+    }
+
+    /**
+     * @expectedException \LinguaLeo\DataQuery\Exception\QueryException
+     * @expectedExceptionMessage Unsupported function: foo
+     */
+    public function testUnsupportedUpsertFunction()
+    {
+        $this->criteria->write(['foo' => 1, 'bar' => -2]);
+        $this->criteria->upsert(['bar' => 'foo']);
+
+        $this->query->insert($this->criteria);
+    }
+
+    /**
+     * @expectedException \LinguaLeo\DataQuery\Exception\QueryException
+     * @expectedExceptionMessage Value for "bar" isn`t specified
+     */
+    public function testValueForIncrementNotSpecified()
+    {
+        $this->criteria->write(['foo' => 1]);
+        $this->criteria->upsert(['bar' => 'inc']);
 
         $this->query->insert($this->criteria);
     }
