@@ -210,18 +210,24 @@ class Query implements QueryInterface
     private function getDuplicateUpdatedValues(array $columns, array $values)
     {
         $updates = [];
-        foreach ($columns as $key => $value) {
-            if(is_int($key)) {
-                $updates[] = $value . '=VALUES(' . $value . ')';
-            } else {
-                switch($value) {
-                    case 'inc':
-                        $updates[] = $key . '=' . $key . '+(?)';
-                        $this->arguments[] = $values[$key];
-                        break;
-                    default:
-                        throw new QueryException('Unsupported mode: ' . $value);
-                }
+        foreach ($columns as $column => $function) {
+            if (is_int($column)) {
+                $column = $function;
+                $function = 'value';
+            }
+            switch ($function) {
+                case 'value';
+                    $updates[] = $column . '=VALUES(' . $column . ')';
+                    break;
+                case 'inc':
+                    $updates[] = $column . '=' . $column . '+(?)';
+                    if (!isset($values[$column])) {
+                        throw new QueryException(sprintf('Value for "%s" isn`t specified', $column));
+                    }
+                    $this->arguments[] = $values[$column];
+                    break;
+                default:
+                    throw new QueryException('Unsupported function: ' . $function);
             }
         }
         return implode(',', $updates);

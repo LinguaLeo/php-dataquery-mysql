@@ -27,6 +27,7 @@
 namespace LinguaLeo\MySQL;
 
 use LinguaLeo\DataQuery\Criteria;
+use LinguaLeo\DataQuery\Exception\QueryException;
 
 class QueryTest extends \PHPUnit_Framework_TestCase
 {
@@ -348,12 +349,24 @@ class QueryTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \LinguaLeo\DataQuery\Exception\QueryException
-     * @expectedExceptionMessage Unsupported mode: foo
+     * @expectedExceptionMessage Unsupported function: foo
      */
-    public function testUnsupportedUpsertMode()
+    public function testUnsupportedUpsertFunction()
     {
         $this->criteria->write(['foo' => 1, 'bar' => -2]);
         $this->criteria->upsert(['bar' => 'foo']);
+
+        $this->query->insert($this->criteria);
+    }
+
+    /**
+     * @expectedException \LinguaLeo\DataQuery\Exception\QueryException
+     * @expectedExceptionMessage Value for "bar" isn`t specified
+     */
+    public function testValueForIncrementNotSpecified()
+    {
+        $this->criteria->write(['foo' => 1]);
+        $this->criteria->upsert(['bar' => 'inc']);
 
         $this->query->insert($this->criteria);
     }
