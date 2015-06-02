@@ -330,7 +330,7 @@ class Query implements QueryInterface
      */
     private function hideQueryException(\PDOException $e, $force)
     {
-        list($generalError, $code, $message) = $e->errorInfo;
+        list($generalError, $code) = $e->errorInfo;
         switch ($code) {
             case 2006: // MySQL server has gone away
             case 2013: // Lost connection to MySQL server during query
