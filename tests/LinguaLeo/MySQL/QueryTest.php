@@ -27,7 +27,6 @@
 namespace LinguaLeo\MySQL;
 
 use LinguaLeo\DataQuery\Criteria;
-use LinguaLeo\DataQuery\Exception\QueryException;
 
 class QueryTest extends \PHPUnit_Framework_TestCase
 {

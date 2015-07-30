@@ -33,11 +33,11 @@ class RoutingTest extends \PHPUnit_Framework_TestCase
     private static $tablesMap = [
         'translate' => [
             'db' => 'lang',
-            'options' => ['localized' => ['as' => 'suff']]
+            'options' => ['localized']
         ],
         'word_user' => [
             'db' => 'leotestdb_i18n',
-            'options' => ['chunked', 'spotted', 'localized' => ['not' => ['ru'], 'as' => 'pref']],
+            'options' => ['chunked', 'spotted'],
         ],
         'server_node' => [
             'options' => 'chunked'
@@ -47,7 +47,7 @@ class RoutingTest extends \PHPUnit_Framework_TestCase
             'options' => ['spotted', 'localized']
         ],
         'content' => [
-            'options' => ['spotted' => ['as' => 'pref'], 'chunked' => ['not' => 99]]
+            'options' => ['spotted', 'chunked']
         ],
         'word_set' => [
             'table_name' => 'glossary'
@@ -60,10 +60,9 @@ class RoutingTest extends \PHPUnit_Framework_TestCase
             ['user', ['spot_id' => 3, 'chunk_id' => 99, 'locale' => 'ru'], 'linguadb.user'],
             ['translate', ['locale' => 'ru'], 'lang_ru.translate'],
             ['word_user', ['spot_id' => 3, 'chunk_id' => 99, 'locale' => 'ru'], 'leotestdb_i18n_3.word_user_99'],
-            ['word_user', ['spot_id' => 3, 'chunk_id' => 99, 'locale' => 'pt'], 'pt_leotestdb_i18n_3.word_user_99'],
             ['server_node', ['spot_id' => 3, 'chunk_id' => 99, 'locale' => 'pt'], 'linguadb.server_node_99'],
             ['word', ['spot_id' => 3, 'chunk_id' => 99, 'locale' => 'pt'], 'test_3_pt.word'],
-            ['content', ['spot_id' => 'c4ca42', 'chunk_id' => 99, 'locale' => 'ru'], 'c4ca42_linguadb.content'],
+            ['content', ['spot_id' => 'c4ca42', 'chunk_id' => 99, 'locale' => 'ru'], 'linguadb_c4ca42.content_99'],
             ['word_set', ['locale' => 'ru'], 'linguadb.glossary']
         ];
     }
@@ -85,15 +84,5 @@ class RoutingTest extends \PHPUnit_Framework_TestCase
     {
         $routing = new Routing('ololo', ['atata' => ['options' => 'qaz']]);
         $routing->getRoute(new Criteria('atata'));
-    }
-
-    /**
-     * @expectedException \LinguaLeo\MySQL\Exception\RoutingException
-     * @expectedExceptionMessage Unknown "qaz" constant for "as" operator
-     */
-    public function testUnknownAsOperator()
-    {
-        $routing = new Routing('ololo', ['atata' => ['options' => ['chunked' => ['as' => 'qaz']]]]);
-        $routing->getRoute(new Criteria('atata', ['chunk_id' => 1]));
     }
 }

@@ -25,4 +25,4 @@
  */
 
 $loader = include __DIR__.'/../vendor/autoload.php';
-$loader->add('LinguaLeo\\', __DIR__);
+$loader->add('LinguaLeo\\MySQL\\', __DIR__);

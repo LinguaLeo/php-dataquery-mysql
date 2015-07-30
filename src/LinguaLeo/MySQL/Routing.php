@@ -57,13 +57,9 @@ class Routing
     {
         $entry = $this->getEntry($criteria->location);
         if (isset($entry['options'])) {
-            foreach ((array)$entry['options'] as $type => $options) {
-                if (is_int($type)) {
-                    $type = $options;
-                    $options = null;
-                }
+            foreach ((array)$entry['options'] as $type) {
                 list($placeholder, $parameter) = $this->getConvertOptions($type);
-                $entry[$placeholder] = $this->getLocation($entry[$placeholder], $criteria->getMeta($parameter), $options);
+                $entry[$placeholder] = $this->getLocation($entry[$placeholder], $criteria->getMeta($parameter));
             }
         }
         return new Route($entry['db'], $entry['table_name']);
@@ -104,21 +100,10 @@ class Routing
      *
      * @param string $location
      * @param mixed $modifier
-     * @param mixed $options
      * @return string
-     * @throws RoutingException
      */
-    private function getLocation($location, $modifier, $options)
+    private function getLocation($location, $modifier)
     {
-        if (isset($options['not']) && in_array($modifier, (array)$options['not'])) {
-            return $location;
-        }
-        if (empty($options['as']) || 'suff' === $options['as']) {
-            return $location.'_'.$modifier;
-        }
-        if ('pref' === $options['as']) {
-            return $modifier.'_'.$location;
-        }
-        throw new RoutingException(sprintf('Unknown "%s" constant for "as" operator', $options['as']));
+        return $location.'_'.$modifier;
     }
 }
