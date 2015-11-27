@@ -29,6 +29,7 @@ namespace LinguaLeo\MySQL;
 use LinguaLeo\DataQuery\Exception\QueryException;
 use LinguaLeo\DataQuery\Criteria;
 use LinguaLeo\DataQuery\QueryInterface;
+use LinguaLeo\MySQL\Model\ServerType;
 
 class Query implements QueryInterface
 {
@@ -197,7 +198,9 @@ class Query implements QueryInterface
             }
         }
 
-        return $this->executeQuery($SQL, $this->arguments);
+        $serverType = $criteria->canBeReadFromSlave ? ServerType::SLAVE : ServerType::MASTER;
+
+        return $this->executeQuery($SQL, $this->arguments, $serverType);
     }
 
     /**
@@ -308,12 +311,16 @@ class Query implements QueryInterface
      * @param array $params
      * @return \LinguaLeo\DataQuery\ResultInterface
      */
-    protected function executeQuery($query, $params = [])
+    protected function executeQuery($query, $params = [], $serverType = ServerType::MASTER)
     {
         $force = false;
         do {
             try {
-                return $this->getResult($this->pool->connect($this->route->getDbName(), $force), $query, $params);
+                return $this->getResult(
+                    $this->pool->connectDB($this->route->getDbName(), $serverType, $force),
+                    $query,
+                    $params
+                );
             } catch (\PDOException $e) {
                 $force = $this->hideQueryException($e, $force);
             }
