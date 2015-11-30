@@ -37,11 +37,29 @@ class Pool
     const MAX_FAILURES_DEFAULT = 15;
     const FAILURE_CACHE_KEY = 'PoolFailuresByHosts';
 
+    /**
+     * @var array
+     */
     private $pool;
 
+    /**
+     * @var Configuration
+     */
     protected $config;
+
+    /**
+     * @var CacheInterface
+     */
     protected $cache;
+
+    /**
+     * @var LoggerInterface
+     */
     protected $logger;
+
+    /**
+     * @var int
+     */
     protected $maxFailures;
 
     /**
