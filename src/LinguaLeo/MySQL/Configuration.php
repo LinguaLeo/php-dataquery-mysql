@@ -33,6 +33,7 @@ class Configuration
     protected $map;
     protected $user;
     protected $passwd;
+    protected $slaveMap;
 
     /**
      * Instantiate the configuration
@@ -41,11 +42,12 @@ class Configuration
      * @param string $user
      * @param string $passwd
      */
-    public function __construct(array $map, $user, $passwd)
+    public function __construct(array $map, $user, $passwd, array $slaveMap = [])
     {
         $this->map = $map;
         $this->user = $user;
         $this->passwd = $passwd;
+        $this->slaveMap = $slaveMap;
     }
 
     public function getUser()
@@ -72,5 +74,16 @@ class Configuration
         }
 
         return $this->map[$dbname];
+    }
+
+    /**
+     * Returns slave host mapping by master
+     * 
+     * @param string $host
+     * @return array
+     */
+    public function getSlaveHosts($host)
+    {
+        return (empty($this->slaveMap[$host]) ? [] : $this->slaveMap[$host]);
     }
 }
