@@ -26,7 +26,7 @@
 
 namespace LinguaLeo\MySQL;
 
-use LinguaLeo\Mysql\Model\ServerType;
+use LinguaLeo\MySQL\Model\ServerType;
 use LinguaLeo\Cache\CacheInterface;
 use LinguaLeo\Cache\TTL as CacheTTL;
 use Psr\Log\LoggerInterface;

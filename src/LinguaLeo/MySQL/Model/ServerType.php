@@ -1,5 +1,5 @@
 <?php
-namespace LinguaLeo\Mysql\Model;
+namespace LinguaLeo\MySQL\Model;
 
 class ServerType
 {
