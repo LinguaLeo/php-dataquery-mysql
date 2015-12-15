@@ -29,7 +29,9 @@ namespace LinguaLeo\MySQL;
 use LinguaLeo\DataQuery\Exception\QueryException;
 use LinguaLeo\DataQuery\Criteria;
 use LinguaLeo\DataQuery\QueryInterface;
+use LinguaLeo\DataQuery\Exception\CriteriaException;
 use LinguaLeo\MySQL\Model\ServerType;
+use LinguaLeo\MySQL\Model\CriteriaMetaParameter;
 
 class Query implements QueryInterface
 {
@@ -198,7 +200,15 @@ class Query implements QueryInterface
             }
         }
 
-        $serverType = $criteria->canBeReadFromSlave ? ServerType::SLAVE : ServerType::MASTER;
+        try {
+            $serverType = (
+                $criteria->getMeta(CriteriaMetaParameter::CAN_BE_READ_FROM_SLAVE) ?
+                ServerType::SLAVE :
+                ServerType::MASTER
+            );
+        } catch (CriteriaException $e) {
+            $serverType = ServerType::MASTER;
+        }
 
         return $this->executeQuery($SQL, $this->arguments, $serverType);
     }
