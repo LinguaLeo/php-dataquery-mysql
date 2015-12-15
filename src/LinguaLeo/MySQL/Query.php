@@ -29,11 +29,12 @@ namespace LinguaLeo\MySQL;
 use LinguaLeo\DataQuery\Exception\QueryException;
 use LinguaLeo\DataQuery\Criteria;
 use LinguaLeo\DataQuery\QueryInterface;
+use LinguaLeo\DataQuery\DbConnectableInterface;
 use LinguaLeo\DataQuery\Exception\CriteriaException;
 use LinguaLeo\MySQL\Model\ServerType;
 use LinguaLeo\MySQL\Model\CriteriaMetaParameter;
 
-class Query implements QueryInterface
+class Query implements QueryInterface, DbConnectableInterface
 {
     /**
      * @var Pool
@@ -301,6 +302,43 @@ class Query implements QueryInterface
         });
     }
 
+    /**
+     * @param Criteria $criteria
+     * @return \PDO
+     */
+    public function getConnection(Criteria $criteria)
+    {
+        return $this->makeConnection(
+            $this->routing->getRoute($criteria)->getDbName(),
+            $this->getServerType($criteria)
+        );
+    }
+
+    protected function makeConnection($dbName, $serverType, $force = false)
+    {
+        do {
+            try {
+                return $this->pool->connectDB($this->route->getDbName(), $serverType, $force);
+            } catch (\PDOException $e) {
+                $force = $this->hidePdoException($e, $force);
+            }
+        } while (true);
+    }
+
+    protected function getServerType(Criteria $criteria)
+    {
+        try {
+            $serverType = (
+                $criteria->getMeta(CriteriaMetaParameter::CAN_BE_READ_FROM_SLAVE) ?
+                ServerType::SLAVE :
+                ServerType::MASTER
+            );
+        } catch (CriteriaException $e) {
+            $serverType = ServerType::MASTER;
+        }
+
+        return $serverType;
+    }
     private function executeUpdate(Criteria $criteria, callable $placeholdersGenerator)
     {
         if (!$criteria->fields) {
@@ -327,12 +365,12 @@ class Query implements QueryInterface
         do {
             try {
                 return $this->getResult(
-                    $this->pool->connectDB($this->route->getDbName(), $serverType, $force),
+                    $this->makeConnection($this->route->getDbName(), $serverType, $force),
                     $query,
                     $params
                 );
             } catch (\PDOException $e) {
-                $force = $this->hideQueryException($e, $force);
+                $force = $this->hidePdoException($e, $force);
             }
         } while (true);
     }
@@ -345,7 +383,7 @@ class Query implements QueryInterface
      * @return boolean
      * @throws \PDOException
      */
-    private function hideQueryException(\PDOException $e, $force)
+    private function hidePdoException(\PDOException $e, $force)
     {
         list($generalError, $code) = $e->errorInfo;
         switch ($code) {
