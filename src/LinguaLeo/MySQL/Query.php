@@ -201,17 +201,7 @@ class Query implements QueryInterface, DbConnectableInterface
             }
         }
 
-        try {
-            $serverType = (
-                $criteria->getMeta(CriteriaMetaParameter::CAN_BE_READ_FROM_SLAVE) ?
-                ServerType::SLAVE :
-                ServerType::MASTER
-            );
-        } catch (CriteriaException $e) {
-            $serverType = ServerType::MASTER;
-        }
-
-        return $this->executeQuery($SQL, $this->arguments, $serverType);
+        return $this->executeQuery($SQL, $this->arguments, $this->getServerType($criteria));
     }
 
     /**
@@ -255,6 +245,9 @@ class Query implements QueryInterface, DbConnectableInterface
         if (empty($criteria->fields)) {
             throw new QueryException('No fields for insert statement');
         }
+        if (ServerType::MASTER !== $this->getServerType($criteria)) {
+            throw new QueryException('Write-queries can be executed only on MASTER');
+        }
 
         $SQL = 'INSERT INTO ' . $this->getFrom($criteria) .
             '(' . implode(',', $criteria->fields) . ') VALUES ' . $this->getValuesPlaceholders($criteria);
@@ -272,6 +265,10 @@ class Query implements QueryInterface, DbConnectableInterface
      */
     public function delete(Criteria $criteria)
     {
+        if (ServerType::MASTER !== $this->getServerType($criteria)) {
+            throw new QueryException('Write-queries can be executed only on MASTER');
+        }
+
         $SQL = 'DELETE FROM ' . $this->getFrom($criteria) . ' WHERE ' . $this->getWhere($criteria);
         return $this->executeQuery($SQL, $this->arguments);
     }
@@ -281,6 +278,10 @@ class Query implements QueryInterface, DbConnectableInterface
      */
     public function update(Criteria $criteria)
     {
+        if (ServerType::MASTER !== $this->getServerType($criteria)) {
+            throw new QueryException('Write-queries can be executed only on MASTER');
+        }
+
         return $this->executeUpdate($criteria, function ($fields) {
             return implode('=?,', $fields) . '=?';
         });
@@ -291,6 +292,10 @@ class Query implements QueryInterface, DbConnectableInterface
      */
     public function increment(Criteria $criteria)
     {
+        if (ServerType::MASTER !== $this->getServerType($criteria)) {
+            throw new QueryException('Write-queries can be executed only on MASTER');
+        }
+
         return $this->executeUpdate($criteria, function ($fields) {
             $placeholders = [];
 
@@ -303,28 +308,28 @@ class Query implements QueryInterface, DbConnectableInterface
     }
 
     /**
+     * Returns actual DB connection
+     *
      * @param Criteria $criteria
      * @return \PDO
      */
     public function getConnection(Criteria $criteria)
     {
-        return $this->makeConnection(
+        return $this->executeCallback(
+            function (Connection $connection) {
+                $connection->ping();
+                return $connection;
+            },
             $this->routing->getRoute($criteria)->getDbName(),
             $this->getServerType($criteria)
         );
     }
 
-    protected function makeConnection($dbName, $serverType, $force = false)
-    {
-        do {
-            try {
-                return $this->pool->connectDB($this->route->getDbName(), $serverType, $force);
-            } catch (\PDOException $e) {
-                $force = $this->hidePdoException($e, $force);
-            }
-        } while (true);
-    }
-
+    /**
+     * Returns expected server type
+     *
+     * @param Criteria $criteria
+     */
     protected function getServerType(Criteria $criteria)
     {
         try {
@@ -339,6 +344,7 @@ class Query implements QueryInterface, DbConnectableInterface
 
         return $serverType;
     }
+
     private function executeUpdate(Criteria $criteria, callable $placeholdersGenerator)
     {
         if (!$criteria->fields) {
@@ -357,18 +363,39 @@ class Query implements QueryInterface, DbConnectableInterface
      *
      * @param string $query
      * @param array $params
+     * @param int $serverType
      * @return \LinguaLeo\DataQuery\ResultInterface
      */
     protected function executeQuery($query, $params = [], $serverType = ServerType::MASTER)
     {
+
+        return $this->executeCallback(
+            function (Connection $connection) use ($query, $params) {
+                return $this->getResult($connection, $query, $params);
+            },
+            $this->route->getDbName(),
+            $serverType
+        );
+    }
+
+    /**
+     * Executes code and prevents query exceptions where possible
+     *
+     * @param callable $callback
+     * @param string $dbName
+     * @param int $serverType
+     */
+    protected function executeCallback(callable $callback, $dbName, $serverType = ServerType::MASTER)
+    {
         $force = false;
         do {
             try {
-                return $this->getResult(
-                    $this->makeConnection($this->route->getDbName(), $serverType, $force),
-                    $query,
-                    $params
-                );
+                $connection = $this->pool->connectDB($dbName, $serverType, $force);
+                if ($connection->inTransaction()) {
+                    $force = true;
+                }
+
+                return call_user_func($callback, $connection);
             } catch (\PDOException $e) {
                 $force = $this->hidePdoException($e, $force);
             }

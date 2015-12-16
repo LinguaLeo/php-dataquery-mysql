@@ -16,7 +16,7 @@
     "minimum-stability": "stable",
     "require": {
         "php": "~5.5",
-        "lingualeo/php-dataquery": "1.2.*",
+        "lingualeo/php-dataquery": "dev-connectable-interface",
         "lingualeo/php-cache": "0.7.*",
         "psr/log": "~1.0"
     },
