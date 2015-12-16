@@ -28,13 +28,12 @@ namespace LinguaLeo\MySQL;
 
 use LinguaLeo\DataQuery\Exception\QueryException;
 use LinguaLeo\DataQuery\Criteria;
-use LinguaLeo\DataQuery\QueryInterface;
-use LinguaLeo\DataQuery\DbConnectableInterface;
+use LinguaLeo\DataQuery\QueryDbConnectableInterface;
 use LinguaLeo\DataQuery\Exception\CriteriaException;
 use LinguaLeo\MySQL\Model\ServerType;
 use LinguaLeo\MySQL\Model\CriteriaMetaParameter;
 
-class Query implements QueryInterface, DbConnectableInterface
+class Query implements QueryDbConnectableInterface
 {
     /**
      * @var Pool
