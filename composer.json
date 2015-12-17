@@ -21,8 +21,7 @@
         "psr/log": "~1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "3.7.*",
-        "lingualeo/php-dataquery": "dev-connectable-interface"
+        "phpunit/phpunit": "3.7.*"
     },
     "suggest": {
         "lingualeo/php-dataquery-myarray": "Allows working with php arrays through query interface"
