@@ -26,19 +26,29 @@
 
 namespace LinguaLeo\MySQL;
 
+use LinguaLeo\MySQL\Interfaces\ScalableConnectionInterface;
 use LinguaLeo\MySQL\Exception\MySQLException;
+use LinguaLeo\MySQL\Model\ServerType;
 use \PDO;
 
-class Connection extends PDO
+class Connection extends PDO implements ScalableConnectionInterface
 {
     private $nestedTransactionCount = 0;
+    private $serverType;
 
-    public function __construct($host, $user, $passwd, array $options = [])
+    public function __construct($host, $user, $passwd, $serverType = ServerType::MASTER, array $options = [])
     {
         $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES 'UTF8'";
         $options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
 
+        $this->serverType = $serverType;
+
         parent::__construct('mysql:host='.$host, $user, $passwd, $options);
+    }
+
+    public function getServerType()
+    {
+        return $this->serverType;
     }
 
     public function ping()

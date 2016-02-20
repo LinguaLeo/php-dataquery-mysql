@@ -145,7 +145,7 @@ class Pool
             }
         }
         try {
-            return new Connection($connectHost, $this->config->getUser(), $this->config->getPasswd());
+            return new Connection($connectHost, $this->config->getUser(), $this->config->getPasswd(), $serverType);
         } catch (\PDOException $e) {
             if ($serverType === ServerType::SLAVE) {
                 $this->incrementSlaveFailure($connectHost);
