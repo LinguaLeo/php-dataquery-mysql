@@ -27,6 +27,7 @@
 namespace LinguaLeo\MySQL;
 
 use LinguaLeo\DataQuery\Criteria;
+use Psr\Log\NullLogger;
 
 class QueryTest extends \PHPUnit_Framework_TestCase
 {
@@ -48,7 +49,7 @@ class QueryTest extends \PHPUnit_Framework_TestCase
             '\LinguaLeo\MySQL\Query',
             ['executeQuery'],
             [
-                new Pool(new Configuration(['test' => 'localhost'], 'test', 'test')),
+                new Pool(new Configuration(['test' => 'localhost'], 'test', 'test'), $this->getMock('LinguaLeo\Cache\CacheInterface'), new NullLogger()),
                 new Routing('test', ['trololo' => null])
             ]
         );
