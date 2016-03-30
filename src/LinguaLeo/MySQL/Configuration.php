@@ -41,6 +41,7 @@ class Configuration
      * @param array $map The databases mapping on hosts
      * @param string $user
      * @param string $passwd
+     * @param array $slaveMap
      */
     public function __construct(array $map, $user, $passwd, array $slaveMap = [])
     {
@@ -78,7 +79,7 @@ class Configuration
 
     /**
      * Returns slave host mapping by master
-     * 
+     *
      * @param string $host
      * @return array
      */

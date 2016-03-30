@@ -48,6 +48,11 @@ class Pool
     protected $config;
 
     /**
+     * @var array
+     */
+    protected $connectionOptions;
+
+    /**
      * @var CacheInterface
      */
     protected $cache;
@@ -67,17 +72,20 @@ class Pool
      * @param CacheInterface $cache
      * @param LoggerInterface $logger
      * @param int $maxFailures
+     * @param array $connectionOptions
      */
     public function __construct(
         Configuration $config,
         CacheInterface $cache,
         LoggerInterface $logger,
-        $maxFailures = self::MAX_FAILURES_DEFAULT
+        $maxFailures = self::MAX_FAILURES_DEFAULT,
+        $connectionOptions = []
     ) {
         $this->config = $config;
         $this->cache = $cache;
         $this->logger = $logger;
         $this->maxFailures = $maxFailures;
+        $this->connectionOptions = $connectionOptions;
     }
 
     /**
@@ -145,7 +153,13 @@ class Pool
             }
         }
         try {
-            return new Connection($connectHost, $this->config->getUser(), $this->config->getPasswd(), $serverType);
+            return new Connection(
+                $connectHost,
+                $this->config->getUser(),
+                $this->config->getPasswd(),
+                $serverType,
+                $this->connectionOptions
+            );
         } catch (\PDOException $e) {
             if ($serverType === ServerType::SLAVE) {
                 $this->incrementSlaveFailure($connectHost);
