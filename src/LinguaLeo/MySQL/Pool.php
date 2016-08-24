@@ -148,7 +148,7 @@ class Pool
         $connectHost = $host;
         if ($serverType === ServerType::SLAVE) {
             if (!$connectHost = $this->getAvailableSlaveByMaster($host)) {
-                $this->logger->notice(sprintf('Pool: cannot fetch slave available; host: %s', $host));
+                $this->logger->debug(sprintf('Pool: cannot fetch slave available; host: %s', $host));
                 return $this->connectHost($host, ServerType::MASTER);
             }
         }
